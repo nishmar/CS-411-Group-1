@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+// Search.php
+
+<html>
+<body>
+
+<?php
+$search = $_POST["search_term"];
+$ourKey = "21a3347dc2f2f1848aa95e206fe41e2e05fd93c0";
+
+echo 'You searched for: ', $search, "<br><br>";
+
+$url =  'http://www.giantbomb.com/api/search/?api_key='.$ourKey.'&format=xml&query='.$search.'&resources=game';
+
+//echo $url, "<br><br>";
+
+$xml = simplexml_load_file($url);
+
+//print_r($xml); // Printing XML file contents
+
+$count=0;
+
+foreach ($xml->results->game as $game) {
+    //print_r($results->game->["name"]);
+    echo "<h2>",$game->name,"</h2>";
+    echo "<img src='", $game->image->thumb_url,"' alt= 'game picture'>";
+    echo "Description: ", $game->deck;
+    echo "<br> Also Known As: ", $game->aliases;
+    echo "<br> Release Date: ", $game->original_release_date;
+    //echo "<br>Platforms: ", $game->platforms->name;
+    echo "<br><br>";
+    $count++;
+}
+
+echo "<br>Results displayed : ". $count. "<br>";
+echo "Total results: ", $xml->number_of_total_results,"<br><br>";
+
+
+/* User input : Next page, call search again?
+Keep track of page numbers and make call to the API with "&page=pageNum"
+*/
+
+//$lastUpdated = $xml->results->game->date_last_updated; // to store in DB
+
+?>
+
+</body>
+</html>
