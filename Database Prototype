@@ -1,0 +1,84 @@
+// Search.php 
+// now includes database
+
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+
+// Create connection
+$conn = new mysqli($servername, $username, $password);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+echo "Connected successfully";
+
+
+$search = $_POST["search_term"];
+echo 'You searched for: ', $search, "<br><br>";
+$search2 = '%'.$search.'%';
+echo $search2;
+$sql = "SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$search2'";
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+    // output data of each row
+    while($row = $result->fetch_assoc()) {
+        echo $row["name"]. "<br>";
+        echo "<img src='", $row["image"], "' alt= 'game picture'>". "<br>";
+        echo $row["description"]. "<br>";
+        echo $row["aliases"]. "<br>";
+    }
+} else {
+    echo "0 results";
+
+
+    $url = 'http://www.giantbomb.com/api/search/?api_key=21a3347dc2f2f1848aa95e206fe41e2e05fd93c0&format=xml&query=' . $search . '&resources=game';
+
+//echo $url, "<br><br>";
+
+    $xml = simplexml_load_file($url);
+
+//print_r($xml); // Printing XML file contents
+
+    $count = 0;
+
+    foreach ($xml->results->game as $game) {
+        //print_r($results->game->["name"]);
+        echo "<h2>", $game->name, "</h2>";
+        echo "<img src='", $game->image->thumb_url, "' alt= 'game picture'>";
+        $image = $game->image->thumb_url;
+        echo "Description: ", $game->deck;
+        echo "<br> Also Known As: ", $game->aliases;
+        echo "<br> Release Date: ", $game->original_release_date;
+
+        $sql = "INSERT INTO `gamecache`.`gamelist` (`Name`, `Image`, `Description`, `Aliases`, `Release Date`) VALUES ('$game->name',
+'$image', '$game->deck', '$game->aliases', '$game->original_release_date')";
+        if ($conn->query($sql) === TRUE) {
+            echo "New record created successfully";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+        //echo "<br>Platforms: ", $game->platforms->name;
+        echo "<br><br>";
+        $count++;
+    }
+
+    echo "<br>Results displayed : ", $count;
+    echo "Total results: ", $xml->number_of_total_results, "<br><br>";
+}
+
+/* User input : Next page, call search again?
+Keep track of page numbers and make call to the API with "&page=pageNum"
+*/
+
+//$lastUpdated = $xml->results->game->date_last_updated; // to store in DB
+
+
+
+
+
+$conn->close();
+
+?>
