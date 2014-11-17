@@ -4,6 +4,7 @@
  * Database Search Prototype -
  * Created by Proj Group 1
  * Updated by Nishi 11/14/14 to always display from DB and added functions.
+ * 11/17/14 : Include pagination
  */
 
 /*
@@ -37,11 +38,48 @@ function displayGames($searchTerm, $conn)
 {
     $searchWild = '%' . $searchTerm . '%'; //add wildcards
 
-    //Search in game cache DB
-    $sql = "SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' LIMIT $pageItems OFFSET $nextPage"; //SELECT * does not work
-    $result = $conn->query($sql);
+    $pagenum = $_GET["pagenum"];
 
-    if($result->num_rows > 0) { //if in DB, display
+    //This checks to see if there is a page number. If not, it will set it to page 1
+    if (!(isset($pagenum)))
+    {
+        $pagenum = 1;
+    }
+
+    //Here we count the number of results
+
+    //Search in game cache DB
+    $data = $conn->query("SELECT * FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' ");
+
+    $rows = $data->num_rows;
+
+
+    if($rows > 0) { //if in DB, display
+
+        //This is the number of results displayed per page
+        $page_rows = 5;
+
+        //This tells us the page number of our last page
+        $last = ceil($rows/$page_rows);
+
+        //this makes sure the page number isn't below one, or more than our maximum pages
+        if ($pagenum < 1)
+        {
+            $pagenum = 1;
+        }
+        elseif ($pagenum > $last)
+        {
+            $pagenum = $last;
+        }
+
+        //This sets the range to display in our query
+        $max = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows;
+
+
+        $sql = "SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' $max "; //SELECT name, image, description, aliases
+        $result = $conn->query($sql);
+
+        echo $result->num_rows;
 
         // output data of each row
         while ($row = $result->fetch_assoc()) {
@@ -51,6 +89,33 @@ function displayGames($searchTerm, $conn)
             echo $row["aliases"] . "<br>";
 
         }
+
+        // This shows the user what page they are on, and the total number of pages
+        echo " --Page $pagenum of $last-- <p>";
+        // First we check if we are on page one. If we are then we don't need a link to the previous page or the first page so we do nothing. If we aren't then we generate links to the first page, and to the previous page.
+        if ($pagenum == 1)
+        {
+        }
+        else
+        {
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1'> <<-First</a> ";
+            echo " ";
+            $previous = $pagenum-1;
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous'> <-Previous</a> ";
+        }
+        //just a spacer
+        echo " ---- ";
+        //This does the same as above, only checking if we are on the last page, and then generating the Next and Last links
+        if ($pagenum == $last)
+        {
+        }
+        else {
+            $next = $pagenum+1;
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next'>Next -></a> ";
+            echo " ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last'>Last ->></a> ";
+        }
+
     }
     else {
         $found = cacheGames($searchTerm, $conn);
@@ -105,18 +170,6 @@ echo 'You searched for: ', $search, "<br><br>";
 
 $conn = connectSQL();
 displayGames($search, $conn);
-
-
-//Do with SQL Limit + paging
-/*echo "<br>Results displayed : ", $count;
-echo "Total results: ", $xml->number_of_total_results, "<br><br>";
-*/
-
-/* User input : Next page, call search again?
-Keep track of page numbers and make call to the API with "&page=pageNum"
-*/
-
-//$lastUpdated = $xml->results->game->date_last_updated; // to store in DB
 
 
 $conn->close();
