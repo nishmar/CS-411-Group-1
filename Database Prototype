@@ -4,7 +4,8 @@
  * Database Search Prototype -
  * Created by Proj Group 1
  * Updated by Nishi 11/14/14 to always display from DB and added functions.
- * 11/17/14 : Include pagination
+ * 11/17/14 : Include pagination using this tutorial : http://php.about.com/od/phpwithmysql/ss/php_pagination.htm
+ * 11/18/14 : Pagination works with minor error. 
  */
 
 /*
@@ -49,7 +50,7 @@ function displayGames($searchTerm, $conn)
     //Here we count the number of results
 
     //Search in game cache DB
-    $data = $conn->query("SELECT * FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' ");
+    $data = $conn->query("SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' ");
 
     $rows = $data->num_rows;
 
@@ -98,10 +99,10 @@ function displayGames($searchTerm, $conn)
         }
         else
         {
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1'> <<-First</a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1&search_term=$searchTerm'> <<-First</a> ";
             echo " ";
             $previous = $pagenum-1;
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous'> <-Previous</a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous&search_term=$searchTerm'> <-Previous</a> ";
         }
         //just a spacer
         echo " ---- ";
@@ -111,9 +112,9 @@ function displayGames($searchTerm, $conn)
         }
         else {
             $next = $pagenum+1;
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next'>Next -></a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next&search_term=$searchTerm'>Next -></a> ";
             echo " ";
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last'>Last ->></a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last&search_term=$searchTerm'>Last ->></a> ";
         }
 
     }
@@ -164,7 +165,8 @@ function cacheGames ($search, $conn)
 
 }
 
-$search = $_POST["search_term"];
+$search = $_GET["search_term"];
+echo $search;
 
 echo 'You searched for: ', $search, "<br><br>";
 
