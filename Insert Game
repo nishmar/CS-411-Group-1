@@ -1,0 +1,52 @@
+<?php
+/**
+ * insertGame.php
+ * Date: 11/19/14
+ * Time: 9:40 PM
+ */
+
+function connectSQL(){
+
+//MySQL default credentials
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+
+// Create connection
+    $conn = new mysqli($servername, $username, $password);
+
+// Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    echo "Connected successfully";
+
+    return $conn;
+
+}
+
+$conn = connectSQL();
+
+
+$status = $_GET["status"];
+$rating = $_GET["rating"];
+$review = $_GET["review"];
+
+$userID = "test1"; //create and read session
+
+$gameID = $_GET["gameID"];
+
+echo $userID;
+echo $gameID;
+
+$sql = "INSERT INTO `gamecache`.`usergames` (`User ID`, `Game ID`,`Status`, `Rating`, `Review`)
+                VALUES ('$userID','$gameID', '$status', '$rating', '$review')";
+
+if ($conn->query($sql) === TRUE) {
+    echo "<br> New record created successfully <br>";
+}
+else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+?>
