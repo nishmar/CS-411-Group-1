@@ -5,12 +5,12 @@
  * Created by Proj Group 1
  * Updated by Nishi 11/14/14 to always display from DB and added functions.
  * 11/17/14 : Include pagination using this tutorial : http://php.about.com/od/phpwithmysql/ss/php_pagination.htm
- * 11/18/14 : Pagination works with minor error. 
  */
 
 /*
  * connectSQL - returns SQL connection
  */
+
 
 function connectSQL(){
 
@@ -47,13 +47,11 @@ function displayGames($searchTerm, $conn)
         $pagenum = 1;
     }
 
-    //Here we count the number of results
-
     //Search in game cache DB
     $data = $conn->query("SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' ");
 
+    //Here we count the number of results
     $rows = $data->num_rows;
-
 
     if($rows > 0) { //if in DB, display
 
@@ -77,18 +75,23 @@ function displayGames($searchTerm, $conn)
         $max = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows;
 
 
-        $sql = "SELECT name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' $max "; //SELECT name, image, description, aliases
+        $sql = "SELECT ID, name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' $max "; //SELECT name, image, description, aliases
         $result = $conn->query($sql);
 
         echo $result->num_rows;
 
         // output data of each row
         while ($row = $result->fetch_assoc()) {
+            echo "<br>";
             echo $row["name"] . "<br>";
             echo "<img src='", $row["image"], "' alt= 'game picture'>" . "<br>";
             echo $row["description"] . "<br>";
             echo $row["aliases"] . "<br>";
 
+            //make function to check if game is already in usergamesdb under user and iD, IF NOT..:
+            if(!checkUserDB($row["ID"], $conn)) {
+                addGameButton($row["name"], $row["ID"]);
+            }
         }
 
         // This shows the user what page they are on, and the total number of pages
@@ -130,6 +133,9 @@ function displayGames($searchTerm, $conn)
     }
 }
 
+/*
+ * cacheGames - retrieve results from API and store in DB
+ */
 function cacheGames ($search, $conn)
 {
     $KEY = '21a3347dc2f2f1848aa95e206fe41e2e05fd93c0';     //API Key
@@ -146,12 +152,13 @@ function cacheGames ($search, $conn)
 
         $image = $game->image->thumb_url; // Solves double -> problem
 
-        $sql = "INSERT INTO `gamecache`.`gamelist` (`Name`, `Image`, `Description`, `Aliases`, `Release Date`)
-                VALUES ('$game->name','$image', '$game->deck', '$game->aliases', '$game->original_release_date')";
+        $sql = "INSERT INTO `gamecache`.`gamelist` (`ID`, `Name`, `Image`, `Description`, `Aliases`, `Release Date`)
+                VALUES ('$game->id', '$game->name', '$image', '$game->deck', '$game->aliases', '$game->original_release_date')";
         if ($conn->query($sql) === TRUE) {
             echo "<br> New record created successfully <br>";
             $count++;
-        } else {
+        }
+        else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
 
@@ -165,8 +172,40 @@ function cacheGames ($search, $conn)
 
 }
 
+/*
+ * addGameButton - Display link to form where users can enter information to store in personal game list
+ */
+function addGameButton ($gameName, $gameID){
+    //Make pop-up window later
+
+    echo "<form action='addGame.php'>
+            <input type='hidden' name='title' value='$gameName'>
+            <input type='hidden' name='id' value='$gameID'>
+           <input type='submit' value='Add Game'>
+           </form>";
+
+}
+
+/*
+ * checkUserDB - returns true if game and user id are already found in list
+ */
+function checkUserDB ($gameID, $conn){
+
+    $userID= "test1"; //substitute with user identifier; grab from session
+
+    $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$userID' AND `Game ID` LIKE '$gameID'";
+    $data = $conn->query($sql);
+    $rows = $data->num_rows;
+
+    if($rows >= 1){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 $search = $_GET["search_term"];
-echo $search;
 
 echo 'You searched for: ', $search, "<br><br>";
 
@@ -177,3 +216,4 @@ displayGames($search, $conn);
 $conn->close();
 
 ?>
+
