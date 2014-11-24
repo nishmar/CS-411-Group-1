@@ -1,29 +1,34 @@
 <?php
 /**
- * addGame.php
- * Date: 11/19/14
- * Time: 5:56 PM
+ * gameListForm.php
+ * Refactored from addGame.php
+ * 
+ * Displays form for storing user information about games.
+ * 
+ * Created by Nishi
  */
 
 // Get game title and ID
 //Find a way to pass on the ID as well
 
-$title = $_GET["title"];
-$id = $_GET["id"];
+$listChange = $_GET["listChange"];
+$gameID = $_GET["gameID"];
 
-//setcookie("c_title", $title, time() + (86400), "/"); // 86400 = 1 day
-//setcookie("c_id", $id, time() + (86400), "/");
-
+if ($listChange=='Add Game'){
+    $title = $_GET["title"];
+    $page = $_GET["pagenum"];
+    $search = $_GET["search_term"];
+}
 ?>
 
-echo "<html>
+<html>
 <head lang='en'>
     <meta charset='UTF-8'>
     <title>Add Game to List</title>
 </head>
 
 <h1>Add Game</h1><br>
-<form action='insertGame.php' method='get'> // insert form action
+<form action='updateGameList.php' method='get'>
 
 <h2>Game Progress </h2>
 
@@ -50,7 +55,17 @@ echo "<html>
     <textarea name='review' rows='5' cols='40'></textarea>
     <br><br>
 
-    <input type='hidden' name='gameID' value='<?php echo ($id)?>'>
+
+    <input type='hidden' name='gameID' value='<?php echo ($gameID)?>'>
+
+    <?php if ($listChange =='Add Game') {
+        echo "<input type='hidden' name='listChange' value='Add Game'>
+        <input type='hidden' name='search_term' value='$search'>
+        <input type='hidden' name='pagenum' value='$page'>";
+    }
+    else if ($_GET["listChange"]=='Edit'){
+        echo "<input type='hidden' name='listChange' value='Edit'>";
+    }?>
     <input type='submit'>
 
 </form>
@@ -59,3 +74,6 @@ echo "<html>
 <form action='search.php'><input type='submit' value='Cancel'</form>
 <body>
 </body>
+
+
+
