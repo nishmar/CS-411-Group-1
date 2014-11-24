@@ -4,8 +4,13 @@
  * Database Search Prototype -
  * Created by Proj Group 1
  * Updated by Nishi 11/14/14 to always display from DB and added functions.
- * 11/17/14 : Include pagination using this tutorial : http://php.about.com/od/phpwithmysql/ss/php_pagination.htm
+ * 11/17/14 : Include pagination using this tutorial :
+ * http://php.about.com/od/phpwithmysql/ss/php_pagination.htm
  */
+
+//`````````````````````````````````````````````````````````
+// <input type="hidden" name="pagenum" value="1">
+// $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$userID' AND `Game ID` LIKE '$gameID'";
 
 /*
  * connectSQL - returns SQL connection
@@ -88,9 +93,9 @@ function displayGames($searchTerm, $conn)
             echo $row["description"] . "<br>";
             echo $row["aliases"] . "<br>";
 
-            //make function to check if game is already in usergamesdb under user and iD, IF NOT..:
+            //If game is not already in user list, show add button
             if(!checkUserDB($row["ID"], $conn)) {
-                addGameButton($row["name"], $row["ID"]);
+                addGameButton($row["name"], $row["ID"], $searchTerm, $pagenum);
             }
         }
 
@@ -175,13 +180,15 @@ function cacheGames ($search, $conn)
 /*
  * addGameButton - Display link to form where users can enter information to store in personal game list
  */
-function addGameButton ($gameName, $gameID){
+function addGameButton ($gameName, $gameID, $search, $pagenum){
     //Make pop-up window later
 
-    echo "<form action='addGame.php'>
+    echo "<form action='gameListForm.php'>
             <input type='hidden' name='title' value='$gameName'>
-            <input type='hidden' name='id' value='$gameID'>
-           <input type='submit' value='Add Game'>
+            <input type='hidden' name='gameID' value='$gameID'>
+            <input type='hidden' name='search_term' value='$search'>
+            <input type='hidden' name='pagenum' value='$pagenum'>
+           <input type='submit' name='listChange' value='Add Game'>
            </form>";
 
 }
@@ -216,4 +223,6 @@ displayGames($search, $conn);
 $conn->close();
 
 ?>
+
+
 
