@@ -1,10 +1,15 @@
 <?php
+// Start the session
+session_start();
+?>
+
+<?php
 /**
  * gameListForm.php
  * Refactored from addGame.php
- * 
+ *
  * Displays form for storing user information about games.
- * 
+ *
  * Created by Nishi
  */
 
@@ -57,6 +62,7 @@ if ($listChange=='Add Game'){
 
 
     <input type='hidden' name='gameID' value='<?php echo ($gameID)?>'>
+    <input type='hidden' name='timestamp' value='<?php echo (time()) ?>'>
 
     <?php if ($listChange =='Add Game') {
         echo "<input type='hidden' name='listChange' value='Add Game'>
@@ -74,6 +80,7 @@ if ($listChange=='Add Game'){
 <form action='search.php'><input type='submit' value='Cancel'</form>
 <body>
 </body>
+
 
 
 
