@@ -1,4 +1,9 @@
 <?php
+// Start the session
+session_start();
+?>
+
+<?php
 
 /*
  * Database Search Prototype -
@@ -10,7 +15,6 @@
 
 //`````````````````````````````````````````````````````````
 // <input type="hidden" name="pagenum" value="1">
-// $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$userID' AND `Game ID` LIKE '$gameID'";
 
 /*
  * connectSQL - returns SQL connection
@@ -107,10 +111,10 @@ function displayGames($searchTerm, $conn)
         }
         else
         {
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1&search_term=$searchTerm'> <<-First</a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1&search_term=$searchTerm&type=game'> <<-First</a> ";
             echo " ";
             $previous = $pagenum-1;
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous&search_term=$searchTerm'> <-Previous</a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous&search_term=$searchTerm&type=game'> <-Previous</a> ";
         }
         //just a spacer
         echo " ---- ";
@@ -120,9 +124,9 @@ function displayGames($searchTerm, $conn)
         }
         else {
             $next = $pagenum+1;
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next&search_term=$searchTerm'>Next -></a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next&search_term=$searchTerm&type=game'>Next -></a> ";
             echo " ";
-            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last&search_term=$searchTerm'>Last ->></a> ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last&search_term=$searchTerm&type=game'>Last ->></a> ";
         }
 
     }
@@ -194,11 +198,26 @@ function addGameButton ($gameName, $gameID, $search, $pagenum){
 }
 
 /*
+ * addFriendButton - Display link to form where users can enter information to store in personal game list
+ */
+function addFriendButton ($userID, $search, $pagenum){
+    //Make pop-up window later
+
+    echo "<form action='updateFriendList.php'>
+            <input type='hidden' name='friendID' value='$userID'>
+            <input type='hidden' name='search_term' value='$search'>
+            <input type='hidden' name='pagenum' value='$pagenum'>
+           <input type='submit' name='listChange' value='Add'>
+           </form>";
+
+}
+
+/*
  * checkUserDB - returns true if game and user id are already found in list
  */
 function checkUserDB ($gameID, $conn){
 
-    $userID= "test1"; //substitute with user identifier; grab from session
+    $userID= $_SESSION["userID"];
 
     $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$userID' AND `Game ID` LIKE '$gameID'";
     $data = $conn->query($sql);
@@ -212,17 +231,146 @@ function checkUserDB ($gameID, $conn){
     }
 }
 
+function checkFriendDB ($friendID, $conn){
+
+    $userID= $_SESSION["userID"];
+
+    $sql = "SELECT * FROM `gamecache`.`userfriends` WHERE `User ID` LIKE '$userID' AND `Friend ID` LIKE '$friendID'";
+    $data = $conn->query($sql);
+    $rows = $data->num_rows;
+
+    if($rows >= 1){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+function isUser($userID){
+
+    $thisUser= $_SESSION["userID"];
+    if ($thisUser==$userID) {
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+
+function displayUsers($searchTerm, $conn){
+
+    $searchWild = '%' . $searchTerm . '%'; //add wildcards
+
+    $pagenum = $_GET["pagenum"];
+
+    //This checks to see if there is a page number. If not, it will set it to page 1
+    if (!(isset($pagenum)))
+    {
+        $pagenum = 1;
+    }
+
+    //Search in game cache DB
+    $data = $conn->query("SELECT * FROM `gamecache`.`userlist` WHERE `User ID` LIKE '$searchWild' ");
+
+    //Here we count the number of results
+    $rows = $data->num_rows;
+
+    if($rows > 0) { //if in DB, display
+
+        //This is the number of results displayed per page
+        $page_rows = 5;
+
+        //This tells us the page number of our last page
+        $last = ceil($rows/$page_rows);
+
+        //this makes sure the page number isn't below one, or more than our maximum pages
+        if ($pagenum < 1)
+        {
+            $pagenum = 1;
+        }
+        elseif ($pagenum > $last)
+        {
+            $pagenum = $last;
+        }
+
+        //This sets the range to display in our query
+        $max = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows;
+
+
+        $sql = "SELECT * FROM `gamecache`.`userlist` WHERE `User ID` LIKE '$searchWild' $max ";
+        $result = $conn->query($sql);
+
+        echo $result->num_rows;
+
+        // output data of each row
+        while ($row = $result->fetch_assoc()) {
+
+            $userID = $row["User ID"];
+
+            if(!isUser($userID)) {
+                echo "<br>";
+
+                echo " <a href='userPageDisplay.php?profileOwner=$userID'> $userID </a> ";
+
+                //If user is not already in user list, show add button
+                if (!checkFriendDB($userID, $conn)) {
+                    addFriendButton($userID, $searchTerm, $pagenum);
+                }
+            }
+        }
+
+        echo "<br>";
+        // This shows the user what page they are on, and the total number of pages
+        echo " --Page $pagenum of $last-- <p>";
+        // First we check if we are on page one. If we are then we don't need a link to the previous page or the first page so we do nothing. If we aren't then we generate links to the first page, and to the previous page.
+        if ($pagenum == 1)
+        {
+        }
+        else
+        {
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=1&search_term=$searchTerm&type=user'> <<-First</a> ";
+            echo " ";
+            $previous = $pagenum-1;
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$previous&search_term=$searchTerm&type=user'> <-Previous</a> ";
+        }
+        //just a spacer
+        echo " ---- ";
+        //This does the same as above, only checking if we are on the last page, and then generating the Next and Last links
+        if ($pagenum == $last)
+        {
+        }
+        else {
+            $next = $pagenum+1;
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$next&search_term=$searchTerm&type=user'>Next -></a> ";
+            echo " ";
+            echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last&search_term=$searchTerm&type=user'>Last ->></a> ";
+        }
+
+    }
+    else {
+
+            echo "<br> No results found";;
+        }
+
+}
+
 $search = $_GET["search_term"];
+$type = $_GET["type"];
 
 echo 'You searched for: ', $search, "<br><br>";
 
 $conn = connectSQL();
-displayGames($search, $conn);
 
+if($type=="game") {
+    displayGames($search, $conn);
+}
+else if ($type=="user"){
+    displayUsers($search, $conn);
+}
 
 $conn->close();
 
 ?>
-
-
 
