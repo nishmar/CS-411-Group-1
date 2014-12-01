@@ -1,11 +1,16 @@
 <?php
+// Start the session
+session_start();
+?>
+
+<?php
 /**
  * updateGameList.php
  * Refactored from insertGame.php
- * 
- * Inserts, updates, or deletes a game from the user's game list. 
+ *
+ * Inserts, updates, or deletes a game from the user's game list.
  * Then redirects user to either search page or profile page.
- * 
+ *
  * Date: 11/19/14
  * Created by Nishi
  */
@@ -33,8 +38,9 @@ $conn = connectSQL();
 
 $listChange = $_GET["listChange"];
 
-$userID = "test1"; //create and read session
+$userID = $_SESSION["userID"];
 $gameID = $_GET["gameID"];
+$timestamp = $_GET["timestamp"];
 
 if ($listChange=='Add Game'){
     $page = $_GET["pagenum"];
@@ -48,12 +54,12 @@ if ($listChange != 'Delete'){
 }
 
 if($listChange=='Add Game') {
-    $sql = "INSERT INTO `gamecache`.`usergames` (`User ID`, `Game ID`,`Status`, `Rating`, `Review`)
-                VALUES ('$userID','$gameID', '$status', '$rating', '$review')";
+    $sql = "INSERT INTO `gamecache`.`usergames` (`User ID`, `Game ID`,`Status`, `Rating`, `Review`, `Timestamp`)
+                VALUES ('$userID','$gameID', '$status', '$rating', '$review', '$timestamp')";
 
     if ($conn->query($sql) === TRUE) {
         echo "<br> New record created successfully <br>";
-        echo "<a href='search.php?pagenum=$page&search_term=$search'> Back to search page </a>";
+        echo "<a href='search.php?pagenum=$page&search_term=$search&type=game'> Back to search page </a>";
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
