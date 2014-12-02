@@ -35,10 +35,22 @@ function connectSQL(){
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
-    echo "Connected successfully";
+
+    //echo "Connected successfully";
 
     return $conn;
 
+}
+
+/*
+ * Validate inputs
+ * Retrieved from w3schools: http://www.w3schools.com/php/php_form_validation.asp
+ */
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
 }
 
 /*
@@ -48,7 +60,7 @@ function displayGames($searchTerm, $conn)
 {
     $searchWild = '%' . $searchTerm . '%'; //add wildcards
 
-    $pagenum = $_GET["pagenum"];
+    $pagenum = test_input($_GET["pagenum"]);
 
     //This checks to see if there is a page number. If not, it will set it to page 1
     if (!(isset($pagenum)))
@@ -84,22 +96,26 @@ function displayGames($searchTerm, $conn)
         $max = 'LIMIT ' .($pagenum - 1) * $page_rows .',' .$page_rows;
 
 
-        $sql = "SELECT ID, name, image, description, aliases FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' $max "; //SELECT name, image, description, aliases
+        $sql = "SELECT * FROM `gamecache`.`gamelist` WHERE name LIKE '$searchWild' $max "; //SELECT name, image, description, aliases
         $result = $conn->query($sql);
-
-        echo $result->num_rows;
 
         // output data of each row
         while ($row = $result->fetch_assoc()) {
             echo "<br>";
-            echo $row["name"] . "<br>";
-            echo "<img src='", $row["image"], "' alt= 'game picture'>" . "<br>";
-            echo $row["description"] . "<br>";
-            echo $row["aliases"] . "<br>";
+            echo $row["Name"] ;
+            if ($row["Aliases"]!= "" && $row["Aliases"] != null){
+                echo " (". $row["Aliases"] . ")<br>";
+            }
+            else{
+                echo "<br>";
+            }
+ ")";
+            echo "<img src='", $row["Image"], "' alt= 'game picture'>" . "<br>";
+            echo $row["Description"] . "<br>";
 
             //If game is not already in user list, show add button
             if(!checkUserDB($row["ID"], $conn)) {
-                addGameButton($row["name"], $row["ID"], $searchTerm, $pagenum);
+                addGameButton($row["Name"], $row["ID"], $searchTerm, $pagenum);
             }
         }
 
@@ -161,14 +177,14 @@ function cacheGames ($search, $conn)
 
         $image = $game->image->thumb_url; // Solves double -> problem
 
-        $sql = "INSERT INTO `gamecache`.`gamelist` (`ID`, `Name`, `Image`, `Description`, `Aliases`, `Release Date`)
-                VALUES ('$game->id', '$game->name', '$image', '$game->deck', '$game->aliases', '$game->original_release_date')";
+        $sql = "INSERT INTO `gamecache`.`gamelist` (`ID`, `Name`, `Image`, `Description`, `Aliases`)
+                VALUES ('$game->id', '$game->name', '$image', '$game->deck', '$game->aliases')";
         if ($conn->query($sql) === TRUE) {
-            echo "<br> New record created successfully <br>";
+            //echo "<br> New record created successfully <br>";
             $count++;
         }
         else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+            //echo "Error: " . $sql . "<br>" . $conn->error;
         }
 
     }
@@ -178,7 +194,6 @@ function cacheGames ($search, $conn)
     else{
         return false;
     }
-
 }
 
 /*
@@ -263,7 +278,7 @@ function displayUsers($searchTerm, $conn){
 
     $searchWild = '%' . $searchTerm . '%'; //add wildcards
 
-    $pagenum = $_GET["pagenum"];
+    $pagenum = test_input($_GET["pagenum"]);
 
     //This checks to see if there is a page number. If not, it will set it to page 1
     if (!(isset($pagenum)))
@@ -350,14 +365,16 @@ function displayUsers($searchTerm, $conn){
 
     }
     else {
-
             echo "<br> No results found";;
         }
 
 }
 
-$search = $_GET["search_term"];
-$type = $_GET["type"];
+$search = test_input($_GET["search_term"]);
+$type = test_input($_GET["type"]);
+
+$user = $_SESSION["userID"];
+echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 
 echo 'You searched for: ', $search, "<br><br>";
 
@@ -373,4 +390,3 @@ else if ($type=="user"){
 $conn->close();
 
 ?>
-
