@@ -13,28 +13,7 @@ session_start();
 */
 -->
 
-<!-- Temporary style for table -->
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        table, th, td {
-            border: 1px solid black;
-        }
-    </style>
-</head>
-<body>
-
 <?php
-
-// Get user (from session) $_SESSSION[" "]
-// Get profile owner from url (user must have clicked on a user profile)
-
-//temp variables representing user and profile owner
-
-$user = $_SESSION["userID"];
-$profileOwner = $_GET["profileOwner"];
-
 function connectSQL(){
 //MySQL default credentials
     $servername = "localhost";
@@ -51,6 +30,13 @@ function connectSQL(){
     //echo "Connected successfully";
 
     return $conn;
+}
+//Validate inputs
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
 }
 
 //Display games from userGame list matching user, separated by status
@@ -72,7 +58,7 @@ function displayGameList($user, $profileOwner, $conn){
 }
 
 /*
- * Displays section of profile page grouped by status
+ * Displays games under given status
  */
 function displayGames($user, $profileOwner, $status, $conn){
     $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$profileOwner' AND `Status` LIKE '$status'";
@@ -108,17 +94,17 @@ function displayGames($user, $profileOwner, $status, $conn){
 }
 
 /*
- * Edit button
+ * Edit game button
  */
 function editButton($gameID){
-echo "<form action='gameListForm.php'>
+    echo "<form action='gameListForm.php'>
            <input type='hidden' name='gameID' value='$gameID'>
            <input type='submit' name='listChange' value='Edit'>
            </form>";
 }
 
 /*
- * Delete button
+ * Delete game button
  */
 function deleteButton($gameID){
     echo "<form action='updateGameList.php'>
@@ -146,6 +132,9 @@ function isOwner($user, $profileOwner){
     }
 }
 
+/*
+ *  Displays reviews from most recent to oldest
+ */
 function displayReviews($profileOwner, $conn){
     $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$profileOwner' AND `Review` IS NOT NULL AND `Review`!='' ORDER BY `Timestamp` DESC";
     $result = $conn->query($sql);
@@ -168,6 +157,9 @@ function displayReviews($profileOwner, $conn){
     }
 }
 
+/*
+ * Displays users profile owner is following
+ */
 function displayFriendList($user, $profileOwner, $conn){
     echo "<br>";
     $sql = "SELECT * FROM `gamecache`.`userfriends` WHERE `User ID` LIKE '$profileOwner'";
@@ -175,7 +167,7 @@ function displayFriendList($user, $profileOwner, $conn){
 
     if ($result->num_rows > 0){
 
-        echo "<br> Friends: ";
+        echo "<br> Following: ";
 
         while ($row = $result->fetch_assoc()) {
             $friendID = $row["Friend ID"];
@@ -191,10 +183,54 @@ function displayFriendList($user, $profileOwner, $conn){
     }
 }
 
-//Main:
+/*
+ * Displays list of users that have added the profile owner to friends list.
+ * No add or delete options regardless of user: users may follow whoever they like.
+ */
+function displayFollowerList($profileOwner, $conn){
+    echo "<br>";
+    $sql = "SELECT * FROM `gamecache`.`userfriends` WHERE `Friend ID` LIKE '$profileOwner'";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0){
+
+        echo "<br> Followers: ";
+
+        while ($row = $result->fetch_assoc()) {
+            $followerID = $row["User ID"];
+
+            echo "<br>";
+            echo " <a href='userPageDisplay.php?profileOwner=$followerID'> $followerID </a> ";
+
+            }
+    }
+}
+?>
+
+<!-- Temporary style for table -->
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+
+<?php
+
+//Get user viewing profile from session
+$user = $_SESSION["userID"];
+
+//Retrieve profile owner from link
+$profileOwner = test_input($_GET["profileOwner"]);
+
 $conn = connectSQL();
 displayGameList($user, $profileOwner, $conn);
 displayFriendList($user, $profileOwner, $conn);
+displayFollowerList($profileOwner, $conn);
 
 $conn->close();
 
