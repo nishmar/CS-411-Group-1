@@ -32,41 +32,84 @@ function connectSQL(){
 
     return $conn;
 }
+//Validate inputs
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
+function checkFriendDB ($friendID, $conn){
+
+    $userID= $_SESSION["userID"];
+
+    $sql = "SELECT * FROM `gamecache`.`userfriends` WHERE `User ID` LIKE '$userID' AND `Friend ID` LIKE '$friendID'";
+    $data = $conn->query($sql);
+    $rows = $data->num_rows;
+
+    if($rows >= 1){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+//Profile link
+$user = $_SESSION["userID"];
+echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 
 $conn = connectSQL();
 
-$listChange = $_GET["listChange"];
-
+//Retrieve variables
+$listChange = test_input($_GET["listChange"]);
 $userID = $_SESSION["userID"];
-$friendID = $_GET["friendID"];
+$friendID = test_input($_GET["friendID"]);
 
+//If adding, retrieve variables
 if ($listChange=='Add'){
-    $page = $_GET["pagenum"];
-    $search = $_GET["search_term"];
+    $page = test_input($_GET["pagenum"]);
+    $search = test_input($_GET["search_term"]);
 }
 
+//Add user to DB
 if($listChange=='Add') {
-    $sql = "INSERT INTO `gamecache`.`userfriends` (`User ID`, `Friend ID`)
+    if (!checkFriendDB($friendID, $conn)) {
+        $sql = "INSERT INTO `gamecache`.`userfriends` (`User ID`, `Friend ID`)
                 VALUES ('$userID','$friendID')";
 
-    if ($conn->query($sql) === TRUE) {
-        echo "<br> New record created successfully <br>";
-        echo "<a href='search.php?pagenum=$page&search_term=$search&type=user'> Back to search page </a>";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        if ($conn->query($sql) === TRUE) {
+            echo "<br> New record created successfully <br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
+    else{
+        echo "<br>User is already in your friend list<br>";
+    }
+    echo "<a href='search.php?pagenum=$page&search_term=$search&type=user'> Back to search page </a>";
 }
 
+//Delete user from DB
 else if ($listChange == 'Delete'){
-    $sql = "DELETE FROM `gamecache`.`userfriends` WHERE `Friend ID`='$friendID' AND `User ID`='$userID'";
 
-    if ($conn->query($sql) === TRUE) {
-        echo "<br> Deleted <br>";
+    if (checkFriendDB($friendID, $conn)) {
+
+        $sql = "DELETE FROM `gamecache`.`userfriends` WHERE `Friend ID`='$friendID' AND `User ID`='$userID'";
+
+        if ($conn->query($sql) === TRUE) {
+            echo "<br> Deleted <br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
         echo "<a href='userPageDisplay.php?profileOwner=$userID'> Return to profile page </a>";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
     }
-
+    else{
+        "<br> User is not in your friend list <br>";
+    }
 }
+
+$conn->close();
 
 ?>
