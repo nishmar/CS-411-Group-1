@@ -1,7 +1,7 @@
 <?php
 // Start the session
 session_start();
-$_SESSION["userID"] = "test2";
+$_SESSION["userID"] = "test1";
 ?>
 
 <!DOCTYPE html>
