@@ -11,21 +11,68 @@ session_start();
  * Displays form for storing user information about games.
  *
  * Created by Nishi
+ *
+ * TO DO:
+ * put cancel button : case add, case edit
  */
 
-// Get game title and ID
-//Find a way to pass on the ID as well
+function connectSQL(){
+//MySQL default credentials
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
 
-$listChange = $_GET["listChange"];
-$gameID = $_GET["gameID"];
+// Create connection
+    $conn = new mysqli($servername, $username, $password);
 
-if ($listChange=='Add Game'){
-    $title = $_GET["title"];
-    $page = $_GET["pagenum"];
-    $search = $_GET["search_term"];
+// Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    //echo "Connected successfully";
+
+    return $conn;
 }
+//Validate inputs
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
+$conn = connectSQL();
+
+//Retrieves variables
+$listChange = test_input($_GET["listChange"]);
+$gameID = test_input($_GET["gameID"]);
+$profileOwner = test_input($_SESSION["userID"]);
+
+//Gets necessary variables depending on condition : Add or edit
+if ($listChange=='Add Game'){
+    $title = test_input($_GET["title"]);
+    $page = test_input($_GET["pagenum"]);
+    $search = test_input($_GET["search_term"]);
+}
+else if ($listChange=='Edit') {
+    $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$profileOwner' AND `Game ID` LIKE '$gameID'";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $status = $row["Status"];
+            $rating = $row["Rating"];
+            $review = $row["Review"];
+        }
+    }
+}
+
+//Profile link
+$user = $_SESSION["userID"];
+echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 ?>
 
+<!-- Form -->
 <html>
 <head lang='en'>
     <meta charset='UTF-8'>
@@ -38,6 +85,9 @@ if ($listChange=='Add Game'){
 <h2>Game Progress </h2>
 
     <select name='status'>
+        <?php if($listChange=="Edit") {
+            echo '<option value=' .$status .'>'. $status .'</option>';
+        }  ?>
         <option value='playing'>Currently Playing</option>
         <option value='completed'>Completed</option>
         <option value='dropped'>Dropped</option>
@@ -47,40 +97,56 @@ if ($listChange=='Add Game'){
 
     <h2> Rating </h2>
     <select name='rating'>
+        <?php if ($listChange=="Edit") {
+            echo '<option value=' .$rating .'>'.$rating.'</option>';
+        } ?>
         <option value=''></option>
-        <option value='1s'>* - Hated It</option>
-        <option value='2s'>** - It was OK</option>
-        <option value='3s'>*** - Liked It </option>
-        <option value='4s'>**** - Loved It</option>
-        <option value='5s'>***** - The best!</option>
+        <option value='*'>* - Hated It</option>
+        <option value='**'>** - It was OK</option>
+        <option value='***'>*** - Liked It </option>
+        <option value='****'>**** - Loved It</option>
+        <option value='*****'>***** - The Best!</option>
     </select>
     <br><br>
 
     <h2> Review </h2>
-    <textarea name='review' rows='5' cols='40'></textarea>
+    <textarea name='review' rows='5' cols='40'><?php if($listChange=="Edit"){echo $review;}?></textarea>
     <br><br>
 
-
-    <input type='hidden' name='gameID' value='<?php echo ($gameID)?>'>
-    <input type='hidden' name='timestamp' value='<?php echo (time()) ?>'>
+    <input type='hidden' name='gameID' value='<?php echo ($gameID) ;?>'>
+    <input type='hidden' name='timestamp' value='<?php echo (time()); ?>'>
 
     <?php if ($listChange =='Add Game') {
         echo "<input type='hidden' name='listChange' value='Add Game'>
         <input type='hidden' name='search_term' value='$search'>
         <input type='hidden' name='pagenum' value='$page'>";
     }
-    else if ($_GET["listChange"]=='Edit'){
+    else if ($listChange=='Edit'){
         echo "<input type='hidden' name='listChange' value='Edit'>";
     }?>
     <input type='submit'>
 
 </form>
 
-<!-- Add pagenum and search_term fields to allow user to return to search page if cancels -->
-<form action='search.php'><input type='submit' value='Cancel'</form>
+<!-- Cancel add or edit. Add: return to search, Edit: return to profile  -->
+<form action= '<?php if ($listChange=='Edit') echo "userPageDisplay.php"; elseif ($listChange=='Add Game') echo "search.php"; ?>' >
+
+    <? if($listChange=='Edit') {
+        echo "<input type='hidden' name='profileOwner' value='$profileOwner'>";
+    }
+    else if ($listChange=='Add Game'){
+        echo "
+    <input type='hidden' name='pagenum' value='$page' >
+    <input type='hidden' name='search_term' value='$search' >
+    <input type='hidden' name='type' value='game'>";
+    }
+    ?>
+    <input type='submit' value='Cancel'>
+</form>
 <body>
 </body>
+</html>
 
-
-
-
+<?php
+$conn->close();
+?>
