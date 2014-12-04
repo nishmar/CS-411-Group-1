@@ -12,41 +12,46 @@
 $nameErr = $passwordErr = $emailErr = "";
 $name = $password = $email = "";
 
+$valid = true;
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST["name"])) {
         $nameErr = "Name is required";
+        $valid= false;
     }
     else {
         $name = test_input($_POST["name"]);
         // check if name only contains letters and whitespace
         if (!preg_match("/^[a-zA-Z0-9_ ]*$/", $name)) {
             $nameErr = "Only letters and numbers allowed";
+            $valid= false;
         }
     }
-
     if (empty($_POST["password"])) {
         $passwordErr = "Password is required";
+        $valid= false;
+
     } else {
         $password = test_input($_POST["password"]);
         // check if e-mail address is well-formed
         if (!preg_match("/^[a-zA-Z0-9_ ]*$/", $password)) {
             $passwordErr = "Only letters and numbers allowed";
+            $valid= false;
+
         }
     }
-
     if (empty($_POST["email"])) {
         $emailErr = "Email is required";
+        $valid= false;
+
     } else {
         $email = test_input($_POST["email"]);
-         if (!preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/", $email)) {
+        if (!preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/", $email)) {
             $emailErr = "Invalid characters used";
+            $valid= false;
         }
     }
-
-
-
 }
-
 function test_input($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -72,44 +77,34 @@ function test_input($data) {
 
     <input type="submit" name="submit" value="Submit">
 
-
     <?php
-    $servername = "localhost";
-    $username = "root";
-    $sqlpassword = "";
 
-    $conn = mysqli_connect($servername, $username, $sqlpassword);
-    // Check connection
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
-
-    $sql = "INSERT INTO `registration`.`registration` (`Username`, `Password`, `Email`)
+    if ($valid) {
+        $servername = "localhost";
+        $username = "root";
+        $sqlpassword = "";
+        $conn = mysqli_connect($servername, $username, $sqlpassword);
+        // Check connection
+        if (!$conn) {
+            die("Connection failed: " . mysqli_connect_error());
+        }
+        $sql = "INSERT INTO `gamecache`.`userlist` (`User ID`, `Password`, `Email`)
   VALUES ('$name','$password','$email')";
 
-    if (mysqli_query($conn, $sql)) {
-        echo "New record created successfully";
-
+        if ($conn->query($sql) === TRUE) {
+            echo "<br> Successfully registered. Redirecting to login page... <br>";
+                header('Location: login.html');
+        } else {
+            echo "Username or Email are already taken.";
+        }
     }
-    else {
-
-    }
-
-    mysqli_close($conn);
-
 
     ?>
-        <form action="redirectedpage.php" method="post">
-        </form>
-
-    </form>
-
-
-
+</form>
 </form>
 
-
-
+</body>
+</html>
 
 
 </body>
