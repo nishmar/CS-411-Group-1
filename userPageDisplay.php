@@ -1,3 +1,10 @@
+<?php
+// Start the session
+session_start();
+$user = $_SESSION["userID"];
+echo $user;
+?>
+
 <!DOCTYPE html>
 
 <html class="en-us nojs us en amr" lang="en-US">
@@ -19,12 +26,7 @@
 
 
 </head>
-<?php
-// Start the session
-session_start();
-$user = $_SESSION["userID"];
-echo $user;
-?>
+
 <body class="interim login">
 <form id="form1" name="form1" method="post" action="login.php">
 
