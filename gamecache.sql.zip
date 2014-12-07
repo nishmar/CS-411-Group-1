@@ -1,0 +1,87 @@
+-- phpMyAdmin SQL Dump
+-- version 4.2.7.1
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Generation Time: Dec 05, 2014 at 09:51 PM
+-- Server version: 5.6.20
+-- PHP Version: 5.5.15
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- Database: `gamecache`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gamelist`
+--
+
+CREATE TABLE IF NOT EXISTS `gamelist` (
+  `Name` varchar(100) NOT NULL,
+  `Image` varchar(200) NOT NULL,
+  `Description` varchar(10000) NOT NULL,
+  `Aliases` varchar(100) NOT NULL,
+  `ID` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Game list database search results';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `userfriends`
+--
+
+CREATE TABLE IF NOT EXISTS `userfriends` (
+  `User ID` varchar(100) NOT NULL,
+  `Friend ID` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `usergames`
+--
+
+CREATE TABLE IF NOT EXISTS `usergames` (
+  `User ID` varchar(100) NOT NULL,
+  `Game ID` varchar(100) NOT NULL,
+  `Status` varchar(10) NOT NULL,
+  `Rating` varchar(10) NOT NULL,
+  `Review` varchar(10000) NOT NULL,
+  `Timestamp` int(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `userlist`
+--
+
+CREATE TABLE IF NOT EXISTS `userlist` (
+  `User ID` varchar(100) NOT NULL,
+  `Password` varchar(100) NOT NULL,
+  `Email` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `userlist`
+--
+ALTER TABLE `userlist`
+ ADD UNIQUE KEY `User ID` (`User ID`), ADD UNIQUE KEY `Email` (`Email`);
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
