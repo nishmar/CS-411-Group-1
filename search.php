@@ -1,6 +1,8 @@
 <?php
 // Start the session
 session_start();
+
+include 'navbar.php';
 ?>
 
 <?php
@@ -102,7 +104,7 @@ function displayGames($searchTerm, $conn)
         // output data of each row
         while ($row = $result->fetch_assoc()) {
             echo "<br>";
-            echo $row["Name"] ;
+            echo "<b>" .$row["Name"] ."</b>";
             if ($row["Aliases"]!= "" && $row["Aliases"] != null){
                 echo " (". $row["Aliases"] . ")<br>";
             }
@@ -363,10 +365,13 @@ function displayUsers($searchTerm, $conn){
             echo " <a href='{$_SERVER['PHP_SELF']}?pagenum=$last&search_term=$searchTerm&type=user'>Last ->></a> ";
         }
 
+
+
     }
     else {
             echo "<br> No results found";;
         }
+
 
 }
 
@@ -374,11 +379,17 @@ $search = test_input($_GET["search_term"]);
 $type = test_input($_GET["type"]);
 
 $user = $_SESSION["userID"];
-echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 
 echo 'You searched for: ', $search, "<br><br>";
 
 $conn = connectSQL();
+
+echo "<div class='container padding-top'>
+    <div class='row'>
+        <div class='col-sm-1'>
+            </div>
+
+        <div class='col-sm-10'>";
 
 if($type=="game") {
     displayGames($search, $conn);
@@ -386,6 +397,11 @@ if($type=="game") {
 else if ($type=="user"){
     displayUsers($search, $conn);
 }
+
+echo "</div>
+<div class='col-sm-1'>
+            </div>
+            </div>";
 
 $conn->close();
 
