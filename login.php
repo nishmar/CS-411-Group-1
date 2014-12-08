@@ -1,38 +1,59 @@
 <?php
 ob_start();
 session_start();
+
+function connectSQL(){
+//MySQL default credentials
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+
+// Create connection
+    $conn = new mysqli($servername, $username, $password);
+
+// Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    //echo "Connected successfully";
+
+    return $conn;
+}
+
 $username = $_POST['username'];
 $password = $_POST['password'];
-$conn = mysql_connect('localhost', 'root', '');
-mysql_select_db('login', $conn);
+
+$conn = connectSQL();
+
 $username = mysql_real_escape_string($username);
+
 $query = "SELECT *
         FROM `gamecache`.`userlist`
         WHERE `User ID` = '$username'";
 
-$result = mysql_query($query);
-if(mysql_num_rows($result) == 0) // User not found. So, redirect to login_form again.
+$result = $conn->query($query);
+
+if($result->num_rows == 0) // User not found. So, redirect to login_form again.
 {
-    header('Location: login.html');
+    header('Location: loginForm.php');
 }
 else {
 
-    $userData = mysql_fetch_array($result, MYSQL_ASSOC);
+    while ($row = $result->fetch_assoc()) {
+        $DBuser= $row["User ID"] ;
+        $DBpass= $row["Password"];
 
-    echo '<script language="javascript">';
-    echo 'alert("message successfully sent")';
-    echo '</script>';
+    }
 
-    if ($password != $userData['Password']) // Incorrect password. So, redirect to login_form again.
+    if ($password != $DBpass) // Incorrect password. So, redirect to login_form again.
     {
-        header('Location: login.html');
-    } else { // Redirect to home page after successful login.
-        session_regenerate_id();
-        //$_SESSION['sess_user_id'] = $userData['id'];
+        header('Location: loginForm.php');
+    }
+    else { // Redirect to home page after successful login.
 
-        $_SESSION['userID'] = $userData['username'];
-        session_write_close();
-        header('Location: searchForm.php');
+        $_SESSION['userID'] = $DBuser;
+
+        header('Location: main.php');
     }
 }
 ?>
