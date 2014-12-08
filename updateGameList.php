@@ -32,7 +32,7 @@ function connectSQL(){
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
-    echo "Connected successfully";
+    //echo "Connected successfully";
 
     return $conn;
 }
@@ -85,7 +85,6 @@ function checkUserDB ($gameID, $conn){
 
 //Profile link
 $user = $_SESSION["userID"];
-echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 
 $conn = connectSQL();
 
@@ -124,7 +123,9 @@ if($listChange=='Add Game') {
         echo "<br>Game is already in your list<br>";
     }
 
-    echo "<a href='search.php?pagenum=$page&search_term=$search&type=game'> Back to search page </a>";
+    //echo "<a href='search.php?pagenum=$page&search_term=$search&type=game'> Back to search page </a>";
+    echo "You will be redirected back to search page..";
+    header('Refresh: 2; url=search.php?pagenum='.$page.'&search_term='.$search.'&type=game');
 }
 
 //Save changes to DB
@@ -155,7 +156,9 @@ else if ($listChange=='Edit'){
     else{
         echo "Game is not in your list";
     }
-    echo '<a href=userPageDisplay.php?profileOwner=' . $_SESSION["userID"] . '> Return to profile page </a>' ;
+    //echo '<a href=userPageDisplay.php?profileOwner=' . $_SESSION["userID"] . '> Return to profile page </a>' ;
+    echo "You will be redirected back to your profile..";
+    header('Refresh: 2; url=userPageDisplay.php?profileOwner='. $userID .'');
 }
 
 //Delete game from DB
@@ -173,7 +176,11 @@ else if ($listChange == 'Delete'){
     else{
         echo "<br> Game is not in your list <br>";
     }
-    echo "<a href='userPageDisplay.php?&profileOwner=" . $_SESSION["userID"] . "'> Return to profile page </a>";
+    $userID= $_SESSION["userID"];
+    //echo "<a href='userPageDisplay.php?&profileOwner=" . $_SESSION["userID"] . "'> Return to profile page </a>";
+    echo "You will be redirected back to your profile..";
+    header('Refresh: 2; url=userPageDisplay.php?profileOwner='. $userID .'');
+
 }
 
 $conn->close();
