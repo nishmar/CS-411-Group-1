@@ -28,7 +28,7 @@ function connectSQL(){
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
     }
-    echo "Connected successfully";
+    //echo "Connected successfully";
 
     return $conn;
 }
@@ -58,7 +58,7 @@ function checkFriendDB ($friendID, $conn){
 
 //Profile link
 $user = $_SESSION["userID"];
-echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
+
 
 $conn = connectSQL();
 
@@ -88,7 +88,10 @@ if($listChange=='Add') {
     else{
         echo "<br>User is already in your friend list<br>";
     }
-    echo "<a href='search.php?pagenum=$page&search_term=$search&type=user'> Back to search page </a>";
+    //echo "<a href='search.php?pagenum=$page&search_term=$search&type=user'> Back to search page </a>";
+    echo "You will be redirected back to search page..";
+    header('Refresh: 2; url=search.php?pagenum='.$page.'&search_term='.$search.'&type=user');
+
 }
 
 //Delete user from DB
@@ -103,7 +106,9 @@ else if ($listChange == 'Delete'){
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
-        echo "<a href='userPageDisplay.php?profileOwner=$userID'> Return to profile page </a>";
+        //echo "<a href='userPageDisplay.php?profileOwner=$userID'> Return to profile page </a>";
+        echo "You will be redirected back to your profile..";
+        header('Refresh: 2; url=userPageDisplay.php?profileOwner='. $userID .'');
     }
     else{
         "<br> User is not in your friend list <br>";
