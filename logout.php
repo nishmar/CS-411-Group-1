@@ -7,17 +7,18 @@ session_start();
 
 <?php
 // remove all session variables
+
+$_SESSION["userID"]="";
+
 session_unset();
 
 // destroy the session
 session_destroy();
 
-echo "You are now logged out. ";
+echo "You are now logged out. Redirecting to Login page...";
 
-header('Location: login.html');
+header('Refresh: 3; url=login.php');
 
 ?>
-
-
 </body>
 </html>
