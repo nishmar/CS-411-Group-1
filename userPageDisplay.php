@@ -1,6 +1,8 @@
 <?php
 // Start the session
 session_start();
+include 'navbar.php';
+
 ?>
 
 <!--
@@ -41,20 +43,25 @@ function test_input($data) {
 
 //Display games from userGame list matching user, separated by status
 function displayGameList($user, $profileOwner, $conn){
-    echo "<br> Currently Playing:";
+
+    echo "<br> <center><h3>Currently Playing:</h3></center>";
     displayGames($user, $profileOwner,'playing', $conn);
 
-    echo "<br> Completed:";
+    echo "<br> <center><h3>Completed:</h3></center>";
     displayGames($user, $profileOwner,'completed', $conn);
 
-    echo "<br> Want to Play:";
+    echo "<br> <h3><center>Want to Play:</center></h3>";
     displayGames($user, $profileOwner,'plan', $conn);
 
-    echo "<br> Dropped:";
+    echo "<br> <h3><center>Dropped:</center></h3>";
     displayGames($user, $profileOwner,'dropped', $conn);
 
-    echo "<br> Reviews:";
+    echo "<br> <h3><center>Reviews:</center></h3>";
+
+    echo "<center>";
     displayReviews($profileOwner, $conn);
+    echo "</center>";
+
 }
 
 /*
@@ -65,7 +72,10 @@ function displayGames($user, $profileOwner, $status, $conn){
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0){
-        echo "<table><tr><th>Title</th><th>Rating</th><th></th><th></th></tr>";
+echo"
+
+<table class='table table-striped'>
+            <tr><th>Title</th><th>Rating</th><th></th><th></th></tr>";
         while ($row = $result->fetch_assoc()) {
             $gameID = $row["Game ID"];
 
@@ -80,7 +90,7 @@ function displayGames($user, $profileOwner, $status, $conn){
             //If user is owner of list, give edit and delete options
             if (isOwner($user, $profileOwner)) {
                 echo "<td>";
-                editButton($gameID);
+                editButton($gameID, $gameTitle);
                 echo "</td><td>";
                 deleteButton($gameID);
                 echo "</td></tr>";
@@ -96,8 +106,9 @@ function displayGames($user, $profileOwner, $status, $conn){
 /*
  * Edit game button
  */
-function editButton($gameID){
+function editButton($gameID, $gameTitle){
     echo "<form action='gameListForm.php'>
+        <input type='hidden' name='title' value='$gameTitle'>
            <input type='hidden' name='gameID' value='$gameID'>
            <input type='submit' name='listChange' value='Edit'>
            </form>";
@@ -149,7 +160,7 @@ function displayReviews($profileOwner, $conn){
             $review = $row["Review"];
 
             echo "<br>";
-            echo "<br>" .$gameTitle;
+            echo "<br><h4>" .$gameTitle. "</h4>";
             echo "<br> " .date('Y/m/d', $timestamp);
             echo "<br>" .$row["Rating"];
             echo "<br>".$review;
@@ -167,7 +178,7 @@ function displayFriendList($user, $profileOwner, $conn){
 
     if ($result->num_rows > 0){
 
-        echo "<br> Following: ";
+        echo "<br> <h3>Following:</h3> ";
 
         while ($row = $result->fetch_assoc()) {
             $friendID = $row["Friend ID"];
@@ -194,7 +205,7 @@ function displayFollowerList($profileOwner, $conn){
 
     if ($result->num_rows > 0){
 
-        echo "<br> Followers: ";
+        echo "<br> <h3>Followers: </h3>";
 
         while ($row = $result->fetch_assoc()) {
             $followerID = $row["User ID"];
@@ -207,17 +218,7 @@ function displayFollowerList($profileOwner, $conn){
 }
 ?>
 
-<!-- Temporary style for table -->
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        table, th, td {
-            border: 1px solid black;
-        }
-    </style>
-</head>
-<body>
+
 
 <?php
 
@@ -228,9 +229,20 @@ $user = $_SESSION["userID"];
 $profileOwner = test_input($_GET["profileOwner"]);
 
 $conn = connectSQL();
-displayGameList($user, $profileOwner, $conn);
-displayFriendList($user, $profileOwner, $conn);
+
+echo "<div class='container padding-top'>
+    <div class='row'>
+        <div class='col-sm-3'>";
+        displayFriendList($user, $profileOwner, $conn);
 displayFollowerList($profileOwner, $conn);
+
+echo "</div>";
+
+echo"<div class='col-sm-9'>";
+
+displayGameList($user, $profileOwner, $conn);
+echo "</div></div>";
+
 
 $conn->close();
 
