@@ -1,6 +1,7 @@
 <?php
 // Start the session
 session_start();
+include 'navbar.php';
 ?>
 
 <?php
@@ -55,6 +56,7 @@ if ($listChange=='Add Game'){
     $search = test_input($_GET["search_term"]);
 }
 else if ($listChange=='Edit') {
+    $title = test_input($_GET["title"]);
     $sql = "SELECT * FROM `gamecache`.`usergames` WHERE `User ID` LIKE '$profileOwner' AND `Game ID` LIKE '$gameID'";
     $result = $conn->query($sql);
 
@@ -69,17 +71,23 @@ else if ($listChange=='Edit') {
 
 //Profile link
 $user = $_SESSION["userID"];
-echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" ;
 ?>
 
 <!-- Form -->
 <html>
+
+<div class="container padding-top">
+    <div class="row">
+        <div class="col-sm-3">
+        </div>
+
+        <div class="col-sm-6">
 <head lang='en'>
     <meta charset='UTF-8'>
     <title>Add Game to List</title>
 </head>
 
-<h1>Add Game</h1><br>
+<h1>Add <?php echo $title?> to your list:</h1><br>
 <form action='updateGameList.php' method='get'>
 
 <h2>Game Progress </h2>
@@ -143,10 +151,15 @@ echo  "<a href='userPageDisplay.php?profileOwner=$user'> Your Profile </a><br>" 
     ?>
     <input type='submit' value='Cancel'>
 </form>
-<body>
-</body>
+
+            </div>
+        <div class="col-sm-3">
+        </div>
+</div>
+
 </html>
 
 <?php
 $conn->close();
 ?>
+
