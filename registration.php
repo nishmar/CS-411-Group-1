@@ -1,3 +1,5 @@
+<?php include 'navbar.php' ;?>
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -7,10 +9,18 @@
 </head>
 <body>
 
+<div class="container padding-top">
+    <div class="row">
+        <div class="col-sm-4">
+            </div>
+
+        <div class="col-sm-4">
+
 <?php
 // define variables and set to empty values
 $nameErr = $passwordErr = $emailErr = "";
 $name = $password = $email = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST["name"])) {
         $nameErr = "Name is required";
@@ -20,52 +30,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $name = test_input($_POST["name"]);
         $valid= true;
         // check if name only contains letters and whitespace
-        if (!preg_match("/^[a-zA-Z0-9]*$/", $name)) {
+        if (!preg_match("/^[a-zA-Z0-9_ ]*$/", $name)) {
             $nameErr = "Only letters and numbers allowed";
             $valid= false;
-        }
-        if (strlen($name) > 100)
-        {
-            $valid = false;
-            $nameErr = "Username cannot exceed 100 characters";
         }
     }
     if (empty($_POST["password"])) {
         $passwordErr = "Password is required";
         $valid= false;
+
     } else {
         $password = test_input($_POST["password"]);
         //$valid= true;
-        if (!preg_match("/^[a-zA-Z0-9]*$/", $password)) {
+        // check if e-mail address is well-formed
+        if (!preg_match("/^[a-zA-Z0-9_ ]*$/", $password)) {
             $passwordErr = "Only letters and numbers allowed";
             $valid= false;
-        }
-        if (strlen($password) <=4)
-        {
-            $valid = false;
-            $passwordErr = "Password should be longer than 4 characters";
-        }
-        if (strlen($password) > 100)
-        {
-            $valid = false;
-            $passwordErr = "Password cannot exceed 100 characters";
+
         }
     }
     if (empty($_POST["email"])) {
         $emailErr = "Email is required";
         $valid= false;
+
     } else {
         $email = test_input($_POST["email"]);
         //$valid= true;
-        // check if e-mail address is well-formed
+
         if (!preg_match("/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/", $email)) {
-            $emailErr = "Invalid email used";
+            $emailErr = "Invalid characters used";
             $valid= false;
-        }
-        if (strlen($email) > 100)
-        {
-            $valid = false;
-            $emailErr = "Email cannot exceed 100 characters";
         }
     }
 }
@@ -77,12 +71,14 @@ function test_input($data) {
 }
 ?>
 
+
 <h2>Account Registration</h2>
 <p><span class="error">* required field.</span></p>
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
 
     Username: <input type="text" name="name" value="<?php echo $name;?>">
     <span class="error">* <?php echo $nameErr;?></span>
+
     <br><br>
     Password: <input type="password" name="password" value="<?php echo $password;?>">
     <span class="error">* <?php echo $passwordErr;?></span>
@@ -94,7 +90,9 @@ function test_input($data) {
     <input type="submit" name="submit" value="Submit">
 
     <?php
+
     if (isset($valid)){
+
         if ($valid) {
             $servername = "localhost";
             $username = "root";
@@ -106,18 +104,27 @@ function test_input($data) {
             }
             $sql = "INSERT INTO `gamecache`.`userlist` (`User ID`, `Password`, `Email`)
   VALUES ('$name','$password','$email')";
+
             if ($conn->query($sql) === TRUE) {
                 echo "<br> Successfully registered. Redirecting to login page... <br>";
-                header('Refresh: 5; url=login.html');
+                header('Refresh: 3; url=loginForm.php');
             }
             else {
-                echo "<script> alert('Username or e-mail is already in use.')</script>";
+            echo "<script> alert('Username or e-mail is already in use.')</script>";
             }
         }
     }
+
     ?>
 </form>
 </form>
 
+            </div>
+
+            <div class="col-sm-4">
+            </div>
+
+        </div>
 </body>
+
 </html>
